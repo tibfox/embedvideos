@@ -25,6 +25,11 @@ export interface Config {
   cleanupEnabled: boolean;
   cleanupIntervalHours: number;
   cleanupRetentionDays: number;
+  // When false, the JobDispatcher poll loop is not started. Set this on
+  // secondary deployments that share a Mongo collection with a primary,
+  // so only one instance dispatches encoder jobs (the claim is not atomic
+  // across replicas, so two pollers can double-dispatch the same job).
+  dispatcherEnabled: boolean;
 }
 
 function parseEncoders(): EncoderConfig[] {
@@ -76,5 +81,6 @@ export function loadConfig(): Config {
     cleanupEnabled: process.env.CLEANUP_ENABLED !== 'false',
     cleanupIntervalHours: parseInt(process.env.CLEANUP_INTERVAL_HOURS || '24', 10),
     cleanupRetentionDays: parseInt(process.env.CLEANUP_RETENTION_DAYS || '7', 10),
+    dispatcherEnabled: process.env.DISPATCHER_ENABLED !== 'false',
   };
 }
